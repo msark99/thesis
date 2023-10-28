@@ -1,6 +1,6 @@
 {
     "resourceType" : "Observation",
-    "id" : "observation-example",
+    "id" : "example-observation",
     "text" : {
       "status" : "generated"
     },
@@ -15,13 +15,24 @@
         "system" : "http://loinc.org",
         "code" : "47248-0",
         "display" : "HIV Antiretroviral therapy Antiretroviral therapy status section"
-      }]
+      },
+      {
+        "system" : "http://loinc.org",
+        "code" : "20447-9",
+        "display" : "HIV 1 RNA [#/volume] (viral load) in Serum or Plasma by NAA with probe detection"
+      }
+    ]
     },
     "subject" : {
-      "reference" : "Patient/example"
+      "reference" : "Patient/example-patient"
     },
-    "effectiveDateTime" : "2013-04-02T09:30:10+01:00",
-    "issued" : "2013-04-03T15:30:10+01:00",
+    "effectiveDateTime" : "2023-05-02T09:30:10+01:00",
+    "valueQuantity":{
+      "value": 27,
+      "system" : "http://unitsofmeasure.org",
+      "code" : "[arb'U]/ml"
+    },
+    "issued" : "2023-05-03T15:30:10+01:00",
     "performer" : [{
       "reference" : "Practitioner/f005",
       "display" : "A. Langeveld"

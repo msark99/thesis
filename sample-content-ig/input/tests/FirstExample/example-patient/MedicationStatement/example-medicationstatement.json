@@ -1,0 +1,19 @@
+{
+  "resourceType": "MedicationStatement",
+  "id": "example-medicationstatement",
+  "status": "active",
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "123456",
+        "display": "Example Medication"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/example-patient"
+  },
+  "effectiveDateTime": "2023-10-27T08:00:00+00:00",
+  "note": "Antiretroviral Therapy (ART)"
+}
