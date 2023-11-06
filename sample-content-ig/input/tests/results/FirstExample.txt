@@ -1,0 +1,4 @@
+Executing CQL...
+CQL path: c:\Users\msark\Desktop\Git\thesis\sample-content-ig\input\cql
+Data path: c:\Users\msark\Desktop\Git\thesis\sample-content-ig\input\tests\FirstExample
+Terminology path: c:\Users\msark\Desktop\Git\thesis\sample-content-ig\input\vocabulary\valueset
