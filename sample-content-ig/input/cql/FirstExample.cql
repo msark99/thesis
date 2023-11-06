@@ -1,7 +1,6 @@
 library FirstExample version '0.1.0'
 
 using FHIR version '4.0.1'
-using System
 
 include FHIRHelpers version '4.0.1'
 
@@ -10,6 +9,7 @@ codesystem "LOINC": 'http://loinc.org'
 codesystem "ICD-10": 'http://hl7.org/fhir/sid/icd-10'
 
 valueset "Marital Status": 'http://hl7.org/fhir/ValueSet/marital-status'
+//valueset "Condition Clinical Status": 'http://hl7.org/fhir/ValueSet/condition-clinical'
 valueset "Condition Clinical Status": 'http://utah.edu/fhir/lcs-cds/ValueSet/conditionclinical'
 
 code "HIV": 'B20' from "ICD-10"
@@ -17,14 +17,20 @@ code "HIV NOS": 'Z21' from "ICD-10"
 code "ART": '47248-0' from "LOINC"
 code "Viral suppression" : '20447-9' from "LOINC"
 
+// abbreviation chapter; nach table of contents?
+// neue chapter: passt der inhalt? wieviele seiten gesamt? 10?
+// aufteilung insgesamt 10/10/10 introduction & background, design & impl, & architec, evaluation & conclusion & discussion
+// synthea?
 // Interval hard codiert aktuell
+// VALUE SET?????????
+// FHIR HELPER VERSION??????
 // ist effectivedatetime das richtige kriterium? oder lieber etwas wie G0402 follow up visit for a medicare...
 // 1. parameter..
 // 3. parameter denom?
-
+// pro parameter, eigene library/cql file? alternative mehrere outputparameter denom1 num1, denom2...
+// wie funktioniert das technisch?
 
 //TODO
-// only measure only patients between 15 and 65 years old https://ecqi.healthit.gov/ecqm/ec/2022/cms349v4#quicktabs-tab-tabs_measure-0
 // deceased : false for minimum data
 // outpatient visit
 
@@ -45,7 +51,8 @@ context Patient
 
 //    are alive?
 //    viral load > 200?
-// Denominator: none
+// Denominator: 
+//    none
 
 // 95% diagnosed, receive sustained art
 // Numerator:
@@ -54,7 +61,8 @@ context Patient
 //    Patient Observation, receives ART (LOINC): 47248-0
 //    Patient Encounter during the performance period (CPT or HCPCS): 99201, 99202, 99203, 99204, 99205, 99212, 99213, 99214, 99215, G0402 
 //    are alive?
-// Denominator: number of people aged 15-65 living with HIV (positive Diagnosis)
+// Denominator: 
+//     number of people aged 15-65 living with HIV (positive Diagnosis)
 
 // 95% diagnosed, receive sustained art and achieve viral suppresions
 // Numerator: 
@@ -65,7 +73,8 @@ context Patient
 //    are alive?
 //    
 //    Patient Encounter during the performance period (CPT or HCPCS): 99201, 99202, 99203, 99204, 99205, 99212, 99213, 99214, 99215, G0402 
-// Denominator: Number of Patients with a HIV viral load less than 200 copies/mililiter at last viral load test
+// Denominator: 
+//     Number of Patients with a HIV viral load less than 200 copies/mililiter at last viral load test
 
 define "Initial Population":
   Denominator
@@ -84,11 +93,11 @@ define "Patient15To65":
 
 // 95% diagnosed receive sustained art
 define "Receive sustained ART":
-  "HIV diagnosis" and "Receive ART" and "Recent Observation" 
+  "HIV diagnosis" and "Receive ART" and "Recent ART Observation" 
 
 // 95% diagnosed who receive sustained art, receive viral suppressions
 define "Receive sustained Viral suppression":
-  "HIV diagnosis" and "Receive ART" and "Achieve Viral suppression" and "Recent Observation"
+  "HIV diagnosis" and "Receive ART" and "Achieve Viral suppression" and "Recent Viral suppression Observation"
 
 define "HIV diagnosis":
   exists(
@@ -118,15 +127,19 @@ define "Achieve Viral suppression":
     )
   )
 
-define "Recent Observation":
+//achieved viral suppression in the last 6 months
+define "Recent Viral suppression Observation":
   exists(
     [Observation] RecentObservation
     where date from RecentObservation.effective in Interval[date from end of "Measurement Period" - 6 months, date from end of "Measurement Period"]
   )
 
+// received ART in the last 3 months
+define "Recent ART Observation":
+  exists(
+    [Observation] RecentObservation
+    where date from RecentObservation.effective in Interval[date from end of "Measurement Period" - 3 months, date from end of "Measurement Period"]
+  )
+
 define "getAge":
   AgeInYears()
-
-define "Get all Condition Codes":
-   [Condition] C
-   return FHIRHelpers.ToCode(singleton from C.code.coding)
