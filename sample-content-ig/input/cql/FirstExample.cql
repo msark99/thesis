@@ -4,18 +4,21 @@ using FHIR version '4.0.1'
 
 include FHIRHelpers version '4.0.1'
 
-codesystem "SNOWMED": 'http://snomed.info/sct'
+codesystem "SNOMED-CT": 'http://snomed.info/sct'
 codesystem "LOINC": 'http://loinc.org'
 codesystem "ICD-10": 'http://hl7.org/fhir/sid/icd-10'
 
 valueset "Marital Status": 'http://hl7.org/fhir/ValueSet/marital-status'
-//valueset "Condition Clinical Status": 'http://hl7.org/fhir/ValueSet/condition-clinical'
 valueset "Condition Clinical Status": 'http://utah.edu/fhir/lcs-cds/ValueSet/conditionclinical'
 
-code "HIV": 'B20' from "ICD-10"
-code "HIV NOS": 'Z21' from "ICD-10"
-code "ART": '47248-0' from "LOINC"
-code "Viral suppression" : '20447-9' from "LOINC"
+code "Human immunodeficiency virus [HIV] disease": 'B20' from "ICD-10" display 'HIV disease'
+code "Asymptomatic human immunodeficiency virus [HIV] infection status": 'Z21' from "ICD-10" display 'HIV disease no symptoms'
+code "HIV Antiretroviral therapy Antiretroviral therapy status section": '47248-0' from "LOINC" display 'ART Status'
+code "HIV 1 RNA [#/volume] (viral load) in Serum or Plasma by NAA with probe detection" : '20447-9' from "LOINC" display 'Viral Load Test'
+
+// HIV Test result (without details of the specific type of test used)
+code "HIV Negative": '165815009' from "SNOMED-CT"
+code "HIV Positive": '165816005' from "SNOMED-CT"
 
 // abbreviation chapter; nach table of contents?
 // neue chapter: passt der inhalt? wieviele seiten gesamt? 10?
@@ -91,35 +94,38 @@ define "Patient15To65":
     where CalculateAgeInYears(p.birthDate.value) >= 15 or CalculateAgeInYears(p.birthDate.value) <= 65
   )
 
-// 95% diagnosed receive sustained art
+// diagnosed receive sustained art
 define "Receive sustained ART":
   "HIV diagnosis" and "Receive ART" and "Recent ART Observation" 
 
-// 95% diagnosed who receive sustained art, receive viral suppressions
+// diagnosed who receive sustained ART, achieve viral suppressions
 define "Receive sustained Viral suppression":
   "HIV diagnosis" and "Receive ART" and "Achieve Viral suppression" and "Recent Viral suppression Observation"
 
 define "HIV diagnosis":
   exists(
-    [Condition: "HIV"] H
+    [Condition: "Human immunodeficiency virus [HIV] disease"] H
     where H.clinicalStatus in "Condition Clinical Status"
   )
   or exists(
-    [Condition: "HIV NOS"] HNOS
+    [Condition: "Asymptomatic human immunodeficiency virus [HIV] infection status"] HNOS
     where HNOS.clinicalStatus in "Condition Clinical Status"
   )
 
+// TODO 1. HIV Test Result
+
+// 2.
 define "Receive ART":
   exists(
     [Observation] ARTValidation
-      where "ART".code in ARTValidation.code.coding.code
+      where "HIV Antiretroviral therapy Antiretroviral therapy status section".code in ARTValidation.code.coding.code
       and ARTValidation.status in {'final', 'amended', 'corrected'}
   )
-
+// 3.
 define "Achieve Viral suppression":
   exists(
     [Observation] ViralsuppressionValidation
-    where "Viral suppression".code in ViralsuppressionValidation.code.coding.code
+    where "HIV 1 RNA [#/volume] (viral load) in Serum or Plasma by NAA with probe detection".code in ViralsuppressionValidation.code.coding.code
     and ViralsuppressionValidation.status in {'final', 'amended', 'corrected'}
     and exists(
       [Observation] ViralSuppresionValue
@@ -143,3 +149,4 @@ define "Recent ART Observation":
 
 define "getAge":
   AgeInYears()
+
